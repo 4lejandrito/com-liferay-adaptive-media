@@ -27,7 +27,6 @@ import com.liferay.adaptive.media.image.finder.ImageAdaptiveMediaQueryBuilder;
 import com.liferay.adaptive.media.image.internal.configuration.ImageAdaptiveMediaAttributeMapping;
 import com.liferay.adaptive.media.image.internal.processor.ImageAdaptiveMedia;
 import com.liferay.adaptive.media.image.internal.util.ImageProcessor;
-import com.liferay.adaptive.media.image.internal.util.ImageStorage;
 import com.liferay.adaptive.media.image.model.AdaptiveMediaImage;
 import com.liferay.adaptive.media.image.processor.ImageAdaptiveMediaAttribute;
 import com.liferay.adaptive.media.image.processor.ImageAdaptiveMediaProcessor;
@@ -148,11 +147,6 @@ public class ImageAdaptiveMediaFinderImpl implements ImageAdaptiveMediaFinder {
 		_imageProcessor = imageProcessor;
 	}
 
-	@Reference(unbind = "-")
-	public void setImageStorage(ImageStorage imageStorage) {
-		_imageStorage = imageStorage;
-	}
-
 	private URI _createFileEntryURL(
 		FileVersion fileVersion,
 		ImageAdaptiveMediaConfigurationEntry configurationEntry) {
@@ -230,8 +224,8 @@ public class ImageAdaptiveMediaFinderImpl implements ImageAdaptiveMediaFinder {
 			ImageAdaptiveMediaAttributeMapping.fromProperties(properties);
 
 		return new ImageAdaptiveMedia(
-			() -> _imageStorage.getContentStream(
-				fileVersion, configurationEntry),
+			() -> _imageLocalService.getAdaptiveMediaImageContentStream(
+				configurationEntry, fileVersion),
 			attributeMapping,
 			uriFactory.apply(fileVersion, configurationEntry));
 	}
@@ -259,7 +253,6 @@ public class ImageAdaptiveMediaFinderImpl implements ImageAdaptiveMediaFinder {
 	private ImageAdaptiveMediaConfigurationHelper _configurationHelper;
 	private AdaptiveMediaImageLocalService _imageLocalService;
 	private ImageProcessor _imageProcessor;
-	private ImageStorage _imageStorage;
 	private AdaptiveMediaURIResolver _uriResolver;
 
 }

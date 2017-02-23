@@ -30,6 +30,7 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import java.io.IOException;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -68,7 +69,7 @@ public class ImageAdaptiveMediaConfigurationHelperImpl
 		List<ImageAdaptiveMediaConfigurationEntry> updatedConfigurationEntries =
 			configurationEntries.stream().filter(
 				configurationEntry ->
-					!configurationEntry.getUUID().equals(uuid)).collect(
+					!uuid.equals(configurationEntry.getUUID())).collect(
 				Collectors.toList());
 
 		ImageAdaptiveMediaConfigurationEntry configurationEntry =
@@ -93,7 +94,7 @@ public class ImageAdaptiveMediaConfigurationHelperImpl
 		List<ImageAdaptiveMediaConfigurationEntry> updatedConfigurationEntries =
 			configurationEntries.stream().filter(
 				configurationEntry ->
-					!configurationEntry.getUUID().equals(uuid)).collect(
+					!uuid.equals(configurationEntry.getUUID())).collect(
 				Collectors.toList());
 
 		_updateConfiguration(companyId, updatedConfigurationEntries);
@@ -107,24 +108,22 @@ public class ImageAdaptiveMediaConfigurationHelperImpl
 			_getConfigurationEntries(companyId);
 
 		configurationEntryStream = configurationEntryStream.sorted(
-			(configurationEntry1, configurationEntry2) ->
-				configurationEntry1.getName().compareTo(
-					configurationEntry2.getName()));
+			Comparator.comparing(
+				ImageAdaptiveMediaConfigurationEntry::getName));
 
 		return configurationEntryStream.collect(Collectors.toList());
 	}
 
 	@Override
 	public Optional<ImageAdaptiveMediaConfigurationEntry>
-		getImageAdaptiveMediaConfigurationEntry(
-			long companyId, String configurationEntryUUID) {
+		getImageAdaptiveMediaConfigurationEntry(long companyId, String uuid) {
 
 		Stream<ImageAdaptiveMediaConfigurationEntry> configurationEntryStream =
 			_getConfigurationEntries(companyId);
 
 		return configurationEntryStream.filter(
-			configurationEntry -> configurationEntryUUID.equals(
-				configurationEntry.getUUID())).findFirst();
+			configurationEntry ->
+				uuid.equals(configurationEntry.getUUID())).findFirst();
 	}
 
 	@Override
@@ -185,8 +184,8 @@ public class ImageAdaptiveMediaConfigurationHelperImpl
 		Optional<ImageAdaptiveMediaConfigurationEntry>
 			duplicateConfigurationEntryOptional =
 				configurationEntries.stream().filter(
-					configurationEntry -> configurationEntry.getUUID().equals(
-						uuid)).findFirst();
+					configurationEntry ->
+						uuid.equals(configurationEntry.getUUID())).findFirst();
 
 		if (duplicateConfigurationEntryOptional.isPresent()) {
 			throw new ImageAdaptiveMediaConfigurationException.

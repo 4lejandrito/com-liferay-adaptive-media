@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.adaptive.media.image.internal.util;
+package com.liferay.adaptive.media.image.internal.storage;
 
 import com.liferay.adaptive.media.image.configuration.ImageAdaptiveMediaConfigurationEntry;
 import com.liferay.adaptive.media.image.internal.configuration.ImageAdaptiveMediaConfigurationEntryImpl;
@@ -102,6 +102,6 @@ public class ImageStorageTest {
 		Assert.assertEquals("adaptive/1/2/3/4/xyz", fileVersionVariantPath);
 	}
 
-	private final ImageStorage _imageStorage = new ImageStorage();
+	private final ImageStorageImpl _imageStorage = new ImageStorageImpl();
 
 }
