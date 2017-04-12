@@ -457,6 +457,28 @@ public class AdaptiveMediaImageEntryLocalServiceUtil {
 	}
 
 	/**
+	* Deletes adaptive media images generated for a file version under a
+	* particular configuration.
+	*
+	* <p>
+	* This method deletes the adaptive media image entry from the database and
+	* it also deletes the bytes from the file store.
+	* </p>
+	*
+	* @param configurationUuid the configuration UUID
+	* @param fileVersionId the primary key of the file version
+	* @throws PortalException if the file version cannot be found
+	* @review
+	*/
+	public static void deleteAdaptiveMediaImageEntryFileVersion(
+		java.lang.String configurationUuid, long fileVersionId)
+		throws com.liferay.portal.kernel.exception.PortalException {
+		getService()
+			.deleteAdaptiveMediaImageEntryFileVersion(configurationUuid,
+			fileVersionId);
+	}
+
+	/**
 	* Deletes all the adaptive media images generated for a file version.
 	*
 	* <p>
