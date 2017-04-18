@@ -229,11 +229,9 @@ PortletURL portletURL = renderResponse.createRenderURL();
 						value='<%= maxHeight.equals("0") ? LanguageUtil.get(request, "auto") : maxHeight + "px" %>'
 					/>
 
-					<c:if test="<%= optimizeImagesAllConfigurationsBackgroundTasksCount == 0 %>">
-						<liferay-ui:search-container-column-jsp
-							path="/adaptive_media/image_configuration_entry_action.jsp"
-						/>
-					</c:if>
+					<liferay-ui:search-container-column-jsp
+						path="/adaptive_media/image_configuration_entry_action.jsp"
+					/>
 				</liferay-ui:search-container-row>
 
 				<liferay-ui:search-iterator displayStyle="list" markupView="lexicon" />
@@ -255,6 +253,57 @@ PortletURL portletURL = renderResponse.createRenderURL();
 		var component = Liferay.component('<portlet:namespace />OptimizeRemaining' + uuid);
 
 		component.startProgress(backgroundTaskUrl);
+	}
+</aui:script>
+
+<aui:script require="metal-dom/src/dom">
+	var dom = metalDomSrcDom.default;
+
+	Liferay.on('start_optimizing', (event) => {
+		let uuid = event.uuid;
+
+		let optimizeIcon = dom.toElement('#<portlet:namespace />icon-optimize-' + uuid);
+		let disableIcon = dom.toElement('#<portlet:namespace />icon-disable-' + uuid);
+
+		<portlet:namespace />disableIcon(optimizeIcon);
+		<portlet:namespace />disableIcon(disableIcon);
+
+	});
+
+	Liferay.on('finish_optimizing', (event) => {
+		let uuid = event.uuid;
+
+		let optimizeIcon = dom.toElement('#<portlet:namespace />icon-optimize-' + uuid);
+		let disableIcon = dom.toElement('#<portlet:namespace />icon-disable-' + uuid);
+
+		<portlet:namespace />enableIcon(disableIcon);
+
+	});
+
+	function <portlet:namespace />disableIcon(element) {
+		if (!element) {
+			return;
+		}
+
+		dom.addClasses(element.parentElement, 'disabled');
+
+		element.setAttribute('data-href', element.getAttribute('href'));
+		element.setAttribute('data-onclick', element.getAttribute('onclick'));
+		element.removeAttribute('href');
+		element.removeAttribute('onclick');
+	}
+
+	function <portlet:namespace />enableIcon(element) {
+		if (!element) {
+			return;
+		}
+
+		dom.removeClasses(element.parentElement, 'disabled');
+
+		element.setAttribute('href', element.getAttribute('data-href'));
+		element.setAttribute('onclick', element.getAttribute('data-onclick'));
+		element.removeAttribute('data-href');
+		element.removeAttribute('data-onclick');
 	}
 </aui:script>
 
