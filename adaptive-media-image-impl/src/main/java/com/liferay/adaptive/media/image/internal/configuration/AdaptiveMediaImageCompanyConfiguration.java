@@ -16,14 +16,9 @@ package com.liferay.adaptive.media.image.internal.configuration;
 
 import aQute.bnd.annotation.metatype.Meta;
 
-import com.liferay.portal.configuration.metatype.annotations.ExtendedObjectClassDefinition;
-
 /**
  * @author Adolfo Pérez
  */
-@ExtendedObjectClassDefinition(
-	scope = ExtendedObjectClassDefinition.Scope.COMPANY
-)
 @Meta.OCD(
 	id = "com.liferay.adaptive.media.image.internal.configuration.AdaptiveMediaImageCompanyConfiguration",
 	localization = "content/Language",
