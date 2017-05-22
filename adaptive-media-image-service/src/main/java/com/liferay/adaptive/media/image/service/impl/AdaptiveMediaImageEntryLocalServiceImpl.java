@@ -14,8 +14,6 @@
 
 package com.liferay.adaptive.media.image.service.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.adaptive.media.exception.AdaptiveMediaRuntimeException;
 import com.liferay.adaptive.media.image.configuration.AdaptiveMediaImageConfigurationEntry;
 import com.liferay.adaptive.media.image.counter.AdaptiveMediaImageCounter;
@@ -37,6 +35,7 @@ import java.io.InputStream;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -62,7 +61,6 @@ import org.osgi.framework.FrameworkUtil;
  *
  * @review
  */
-@ProviderType
 public class AdaptiveMediaImageEntryLocalServiceImpl
 	extends AdaptiveMediaImageEntryLocalServiceBaseImpl {
 
@@ -312,10 +310,15 @@ public class AdaptiveMediaImageEntryLocalServiceImpl
 		Collection<AdaptiveMediaImageCounter> imageCounters =
 			_serviceTrackerMap.values();
 
-		return imageCounters.stream().mapToInt(
+		Stream<AdaptiveMediaImageCounter> adaptiveMediaImageCounterStream =
+			imageCounters.stream();
+
+		return adaptiveMediaImageCounterStream.mapToInt(
 			adaptiveMediaImageCounter ->
 				adaptiveMediaImageCounter.
-					countExpectedAdaptiveMediaImageEntries(companyId)).sum();
+					countExpectedAdaptiveMediaImageEntries(
+						companyId)
+		).sum();
 	}
 
 	/**

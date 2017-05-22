@@ -132,8 +132,8 @@ public class AdaptiveMediaImageQueryBuilderImpl
 		getConfigurationEntryFilter() {
 
 		if (_hasConfiguration()) {
-			return configurationEntry ->
-				_configurationUuid.equals(configurationEntry.getUUID());
+			return configurationEntry -> _configurationUuid.equals(
+				configurationEntry.getUUID());
 		}
 
 		return configurationEntry -> true;
@@ -145,7 +145,7 @@ public class AdaptiveMediaImageQueryBuilderImpl
 		}
 
 		if (_hasConfiguration()) {
-			return AdaptiveMediaImageQueryBuilder.ConfigurationStatus.ALL;
+			return AdaptiveMediaImageQueryBuilder.ConfigurationStatus.ANY;
 		}
 
 		return AdaptiveMediaImageQueryBuilder.ConfigurationStatus.ENABLED;
@@ -177,14 +177,14 @@ public class AdaptiveMediaImageQueryBuilderImpl
 	public <V> StrictSortStep orderBy(
 		AdaptiveMediaAttribute<AdaptiveMediaImageProcessor, V>
 			adaptiveMediaAttribute,
-		boolean asc) {
+		AdaptiveMediaImageQueryBuilder.SortOrder sortOrder) {
 
 		if (adaptiveMediaAttribute == null) {
 			throw new IllegalArgumentException(
 				"Adaptive media attribute cannot be null");
 		}
 
-		_sortCriteria.put(adaptiveMediaAttribute, asc);
+		_sortCriteria.put(adaptiveMediaAttribute, sortOrder);
 
 		return this;
 	}
@@ -252,7 +252,7 @@ public class AdaptiveMediaImageQueryBuilderImpl
 	private FileEntry _fileEntry;
 	private FileVersion _fileVersion;
 	private final Map
-		<AdaptiveMediaAttribute<AdaptiveMediaImageProcessor, ?>, Boolean>
+		<AdaptiveMediaAttribute<AdaptiveMediaImageProcessor, ?>, SortOrder>
 			_sortCriteria = new LinkedHashMap<>();
 
 }
