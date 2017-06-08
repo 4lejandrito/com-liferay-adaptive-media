@@ -193,7 +193,9 @@ public class AdaptiveMediaBlogsEntryExportImportContentProcessor
 			element.removeAttr(_EXPORT_IMPORT_PATH_ATTR);
 
 			if ("picture".equals(element.tagName())) {
-				Element img = element.getElementsByTag("img").first();
+				Elements imgElements = element.getElementsByTag("img");
+
+				Element img = imgElements.first();
 
 				Element picture = _parseNode(
 					_adaptiveMediaImageHTMLTagFactory.create(
