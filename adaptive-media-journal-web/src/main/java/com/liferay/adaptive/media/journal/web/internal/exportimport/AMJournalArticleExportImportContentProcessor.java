@@ -82,35 +82,6 @@ public class AMJournalArticleExportImportContentProcessor
 			replacedContent, html -> _replace(html, amEmbeddedReferenceSet));
 	}
 
-	@Reference(unbind = "-")
-	public void setAMEmbeddedReferenceSetFactory(
-		AMEmbeddedReferenceSetFactory amEmbeddedReferenceSetFactory) {
-
-		_amEmbeddedReferenceSetFactory = amEmbeddedReferenceSetFactory;
-	}
-
-	@Reference(unbind = "-")
-	public void setAMImageHTMLTagFactory(
-		AMImageHTMLTagFactory amImageHTMLTagFactory) {
-
-		_amImageHTMLTagFactory = amImageHTMLTagFactory;
-	}
-
-	@Reference(unbind = "-")
-	public void setDLAppLocalService(DLAppLocalService dlAppLocalService) {
-		_dlAppLocalService = dlAppLocalService;
-	}
-
-	@Reference(
-		target = "(objectClass=com.liferay.journal.internal.exportimport.content.processor.JournalArticleExportImportContentProcessor)",
-		unbind = "-"
-	)
-	public void setExportImportContentProcessor(
-		ExportImportContentProcessor<String> exportImportContentProcessor) {
-
-		_exportImportContentProcessor = exportImportContentProcessor;
-	}
-
 	@Override
 	public void validateContentReferences(long groupId, String content)
 		throws PortalException {
@@ -132,6 +103,35 @@ public class AMJournalArticleExportImportContentProcessor
 
 				return html;
 			});
+	}
+
+	@Reference(unbind = "-")
+	protected void setAMEmbeddedReferenceSetFactory(
+		AMEmbeddedReferenceSetFactory amEmbeddedReferenceSetFactory) {
+
+		_amEmbeddedReferenceSetFactory = amEmbeddedReferenceSetFactory;
+	}
+
+	@Reference(unbind = "-")
+	protected void setAMImageHTMLTagFactory(
+		AMImageHTMLTagFactory amImageHTMLTagFactory) {
+
+		_amImageHTMLTagFactory = amImageHTMLTagFactory;
+	}
+
+	@Reference(unbind = "-")
+	protected void setDLAppLocalService(DLAppLocalService dlAppLocalService) {
+		_dlAppLocalService = dlAppLocalService;
+	}
+
+	@Reference(
+		target = "(objectClass=com.liferay.journal.internal.exportimport.content.processor.JournalArticleExportImportContentProcessor)",
+		unbind = "-"
+	)
+	protected void setExportImportContentProcessor(
+		ExportImportContentProcessor<String> exportImportContentProcessor) {
+
+		_exportImportContentProcessor = exportImportContentProcessor;
 	}
 
 	private FileEntry _getFileEntry(long fileEntryId) {
