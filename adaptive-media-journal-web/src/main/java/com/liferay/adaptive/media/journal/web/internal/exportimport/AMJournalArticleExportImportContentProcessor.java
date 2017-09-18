@@ -56,10 +56,12 @@ public class AMJournalArticleExportImportContentProcessor
 			_exportImportContentProcessor.replaceExportContentReferences(
 				portletDataContext, stagedModel, content,
 				exportReferencedContent, escapeContent);
+
 		AMReferenceExporter amReferenceExporter = new AMReferenceExporter(
 			portletDataContext, stagedModel, exportReferencedContent);
 
-		return _replace(replacedContent, amReferenceExporter);
+		return _amJournalArticleContentHTMLReplacer.replace(
+			replacedContent, html -> _replace(html, amReferenceExporter));
 	}
 
 	@Override
@@ -71,11 +73,13 @@ public class AMJournalArticleExportImportContentProcessor
 		String replacedContent =
 			_exportImportContentProcessor.replaceImportContentReferences(
 				portletDataContext, stagedModel, content);
+
 		AMEmbeddedReferenceSet amEmbeddedReferenceSet =
 			_amEmbeddedReferenceSetFactory.create(
 				portletDataContext, stagedModel);
 
-		return _replace(replacedContent, amEmbeddedReferenceSet);
+		return _amJournalArticleContentHTMLReplacer.replace(
+			replacedContent, html -> _replace(html, amEmbeddedReferenceSet));
 	}
 
 	@Reference(unbind = "-")
@@ -114,13 +118,20 @@ public class AMJournalArticleExportImportContentProcessor
 		_exportImportContentProcessor.validateContentReferences(
 			groupId, content);
 
-		Document document = _parseDocument(content);
+		_amJournalArticleContentHTMLReplacer.replace(
+			content,
+			html -> {
+				Document document = _parseDocument(html);
 
-		for (Element element : document.select("[data-fileEntryId]")) {
-			long fileEntryId = Long.valueOf(element.attr("data-fileEntryId"));
+				for (Element element : document.select("[data-fileEntryId]")) {
+					long fileEntryId = Long.valueOf(
+						element.attr("data-fileEntryId"));
 
-			_dlAppLocalService.getFileEntry(fileEntryId);
-		}
+					_dlAppLocalService.getFileEntry(fileEntryId);
+				}
+
+				return html;
+			});
 	}
 
 	private FileEntry _getFileEntry(long fileEntryId) {
@@ -234,6 +245,9 @@ public class AMJournalArticleExportImportContentProcessor
 
 	private AMEmbeddedReferenceSetFactory _amEmbeddedReferenceSetFactory;
 	private AMImageHTMLTagFactory _amImageHTMLTagFactory;
+	private final AMJournalArticleContentHTMLReplacer
+		_amJournalArticleContentHTMLReplacer =
+			new AMJournalArticleContentHTMLReplacer();
 	private DLAppLocalService _dlAppLocalService;
 	private ExportImportContentProcessor<String> _exportImportContentProcessor;
 
