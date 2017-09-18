@@ -79,35 +79,6 @@ public class AMBlogsEntryExportImportContentProcessor
 		return _replace(replacedContent, amEmbeddedReferenceSet);
 	}
 
-	@Reference(unbind = "-")
-	public void setAMEmbeddedReferenceSetFactory(
-		AMEmbeddedReferenceSetFactory amEmbeddedReferenceSetFactory) {
-
-		_amEmbeddedReferenceSetFactory = amEmbeddedReferenceSetFactory;
-	}
-
-	@Reference(unbind = "-")
-	public void setAMImageHTMLTagFactory(
-		AMImageHTMLTagFactory amImageHTMLTagFactory) {
-
-		_amImageHTMLTagFactory = amImageHTMLTagFactory;
-	}
-
-	@Reference(unbind = "-")
-	public void setDLAppLocalService(DLAppLocalService dlAppLocalService) {
-		_dlAppLocalService = dlAppLocalService;
-	}
-
-	@Reference(
-		target = "(objectClass=com.liferay.blogs.internal.exportimport.content.processor.BlogsEntryExportImportContentProcessor)",
-		unbind = "-"
-	)
-	public void setExportImportContentProcessor(
-		ExportImportContentProcessor<String> exportImportContentProcessor) {
-
-		_exportImportContentProcessor = exportImportContentProcessor;
-	}
-
 	@Override
 	public void validateContentReferences(long groupId, String content)
 		throws PortalException {
@@ -122,6 +93,35 @@ public class AMBlogsEntryExportImportContentProcessor
 
 			_dlAppLocalService.getFileEntry(fileEntryId);
 		}
+	}
+
+	@Reference(unbind = "-")
+	protected void setAMEmbeddedReferenceSetFactory(
+		AMEmbeddedReferenceSetFactory amEmbeddedReferenceSetFactory) {
+
+		_amEmbeddedReferenceSetFactory = amEmbeddedReferenceSetFactory;
+	}
+
+	@Reference(unbind = "-")
+	protected void setAMImageHTMLTagFactory(
+		AMImageHTMLTagFactory amImageHTMLTagFactory) {
+
+		_amImageHTMLTagFactory = amImageHTMLTagFactory;
+	}
+
+	@Reference(unbind = "-")
+	protected void setDLAppLocalService(DLAppLocalService dlAppLocalService) {
+		_dlAppLocalService = dlAppLocalService;
+	}
+
+	@Reference(
+		target = "(objectClass=com.liferay.blogs.internal.exportimport.content.processor.BlogsEntryExportImportContentProcessor)",
+		unbind = "-"
+	)
+	protected void setExportImportContentProcessor(
+		ExportImportContentProcessor<String> exportImportContentProcessor) {
+
+		_exportImportContentProcessor = exportImportContentProcessor;
 	}
 
 	private FileEntry _getFileEntry(long fileEntryId) {
