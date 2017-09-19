@@ -14,7 +14,6 @@
 
 package com.liferay.adaptive.media.journal.web.internal.exportimport;
 
-import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.UnsafeFunction;
@@ -37,9 +36,7 @@ import org.osgi.service.component.annotations.Component;
 )
 public class AMJournalArticleContentHTMLReplacer {
 
-	public String replace(String content, Replace replace)
-		throws PortalException {
-
+	public String replace(String content, Replace replace) throws Exception {
 		try {
 			Document document = SAXReaderUtil.read(content);
 
@@ -77,8 +74,7 @@ public class AMJournalArticleContentHTMLReplacer {
 	}
 
 	@FunctionalInterface
-	public interface Replace
-		extends UnsafeFunction<String, String, PortalException> {
+	public interface Replace extends UnsafeFunction<String, String, Exception> {
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
