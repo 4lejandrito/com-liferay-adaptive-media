@@ -14,21 +14,10 @@
 
 package com.liferay.adaptive.media.blogs.internal.exportimport.content.processor;
 
-import com.liferay.adaptive.media.image.html.AMImageHTMLTagFactory;
-import com.liferay.document.library.kernel.service.DLAppLocalService;
 import com.liferay.exportimport.content.processor.ExportImportContentProcessor;
-import com.liferay.exportimport.kernel.lar.ExportImportPathUtil;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.log.Log;
-import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.StagedModel;
-import com.liferay.portal.kernel.repository.model.FileEntry;
-
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -57,10 +46,11 @@ public class AMBlogsEntryExportImportContentProcessor
 			_exportImportContentProcessor.replaceExportContentReferences(
 				portletDataContext, stagedModel, content,
 				exportReferencedContent, escapeContent);
-		AMReferenceExporter amReferenceExporter = new AMReferenceExporter(
-			portletDataContext, stagedModel, exportReferencedContent);
 
-		return _replace(replacedContent, amReferenceExporter);
+		return _amHTMLExportImportContentProcessor.
+			replaceExportContentReferences(
+				portletDataContext, stagedModel, replacedContent,
+				exportReferencedContent, escapeContent);
 	}
 
 	@Override
@@ -72,11 +62,10 @@ public class AMBlogsEntryExportImportContentProcessor
 		String replacedContent =
 			_exportImportContentProcessor.replaceImportContentReferences(
 				portletDataContext, stagedModel, content);
-		AMEmbeddedReferenceSet amEmbeddedReferenceSet =
-			_amEmbeddedReferenceSetFactory.create(
-				portletDataContext, stagedModel);
 
-		return _replace(replacedContent, amEmbeddedReferenceSet);
+		return _amHTMLExportImportContentProcessor.
+			replaceImportContentReferences(
+				portletDataContext, stagedModel, replacedContent);
 	}
 
 	@Override
@@ -86,32 +75,8 @@ public class AMBlogsEntryExportImportContentProcessor
 		_exportImportContentProcessor.validateContentReferences(
 			groupId, content);
 
-		Document document = _parseDocument(content);
-
-		for (Element element : document.select("[data-fileEntryId]")) {
-			long fileEntryId = Long.valueOf(element.attr("data-fileEntryId"));
-
-			_dlAppLocalService.getFileEntry(fileEntryId);
-		}
-	}
-
-	@Reference(unbind = "-")
-	protected void setAMEmbeddedReferenceSetFactory(
-		AMEmbeddedReferenceSetFactory amEmbeddedReferenceSetFactory) {
-
-		_amEmbeddedReferenceSetFactory = amEmbeddedReferenceSetFactory;
-	}
-
-	@Reference(unbind = "-")
-	protected void setAMImageHTMLTagFactory(
-		AMImageHTMLTagFactory amImageHTMLTagFactory) {
-
-		_amImageHTMLTagFactory = amImageHTMLTagFactory;
-	}
-
-	@Reference(unbind = "-")
-	protected void setDLAppLocalService(DLAppLocalService dlAppLocalService) {
-		_dlAppLocalService = dlAppLocalService;
+		_amHTMLExportImportContentProcessor.validateContentReferences(
+			groupId, content);
 	}
 
 	@Reference(
@@ -124,118 +89,10 @@ public class AMBlogsEntryExportImportContentProcessor
 		_exportImportContentProcessor = exportImportContentProcessor;
 	}
 
-	private FileEntry _getFileEntry(long fileEntryId) {
-		try {
-			return _dlAppLocalService.getFileEntry(fileEntryId);
-		}
-		catch (PortalException pe) {
-			if (_log.isWarnEnabled()) {
-				_log.warn(pe, pe);
-			}
+	@Reference(target = "(adaptive.media.format=html)")
+	private ExportImportContentProcessor<String>
+		_amHTMLExportImportContentProcessor;
 
-			return null;
-		}
-	}
-
-	private Document _parseDocument(String html) {
-		Document.OutputSettings outputSettings = new Document.OutputSettings();
-
-		outputSettings.prettyPrint(false);
-		outputSettings.syntax(Document.OutputSettings.Syntax.xml);
-
-		Document document = Jsoup.parseBodyFragment(html);
-
-		document.outputSettings(outputSettings);
-
-		return document;
-	}
-
-	private Element _parseNode(String tag) {
-		Document document = _parseDocument(tag);
-
-		Element bodyElement = document.body();
-
-		return bodyElement.child(0);
-	}
-
-	private String _replace(
-			String content, AMEmbeddedReferenceSet amEmbeddedReferenceSet)
-		throws PortalException {
-
-		Document document = _parseDocument(content);
-
-		Elements elements = document.getElementsByAttribute(
-			_ATTRIBUTE_NAME_EXPORT_IMPORT_PATH);
-
-		for (Element element : elements) {
-			String path = element.attr(_ATTRIBUTE_NAME_EXPORT_IMPORT_PATH);
-
-			if (!amEmbeddedReferenceSet.containsReference(path)) {
-				continue;
-			}
-
-			long fileEntryId = amEmbeddedReferenceSet.importReference(path);
-
-			FileEntry fileEntry = _getFileEntry(fileEntryId);
-
-			if (fileEntry == null) {
-				continue;
-			}
-
-			element.attr("data-fileEntryId", String.valueOf(fileEntryId));
-			element.removeAttr(_ATTRIBUTE_NAME_EXPORT_IMPORT_PATH);
-
-			if ("picture".equals(element.tagName())) {
-				Elements imgElements = element.getElementsByTag("img");
-
-				Element imgElement = imgElements.first();
-
-				Element picture = _parseNode(
-					_amImageHTMLTagFactory.create(
-						imgElement.toString(), fileEntry));
-
-				element.html(picture.html());
-			}
-		}
-
-		Element bodyElement = document.body();
-
-		return bodyElement.html();
-	}
-
-	private String _replace(
-			String content, AMReferenceExporter amReferenceExporter)
-		throws PortalException {
-
-		Document document = _parseDocument(content);
-
-		for (Element element : document.select("[data-fileEntryId]")) {
-			long fileEntryId = Long.valueOf(element.attr("data-fileEntryId"));
-
-			FileEntry fileEntry = _dlAppLocalService.getFileEntry(fileEntryId);
-
-			amReferenceExporter.exportReference(fileEntry);
-
-			element.removeAttr("data-fileEntryId");
-			element.attr(
-				_ATTRIBUTE_NAME_EXPORT_IMPORT_PATH,
-				ExportImportPathUtil.getModelPath(fileEntry));
-		}
-
-		Element bodyElement = document.body();
-
-		return bodyElement.html();
-	}
-
-	private static final String _ATTRIBUTE_NAME_EXPORT_IMPORT_PATH =
-		"export-import-path";
-
-	private static final Log _log = LogFactoryUtil.getLog(
-		AMBlogsEntryExportImportContentProcessor.class);
-
-	private AMEmbeddedReferenceSetFactory _amEmbeddedReferenceSetFactory;
-	private AMImageHTMLTagFactory _amImageHTMLTagFactory;
-	private DLAppLocalService _dlAppLocalService;
 	private ExportImportContentProcessor<String> _exportImportContentProcessor;
 
 }
