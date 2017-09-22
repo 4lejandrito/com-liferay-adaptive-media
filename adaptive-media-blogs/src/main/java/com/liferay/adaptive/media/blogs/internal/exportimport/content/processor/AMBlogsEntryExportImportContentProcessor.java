@@ -79,20 +79,25 @@ public class AMBlogsEntryExportImportContentProcessor
 			groupId, content);
 	}
 
+	@Reference(target = "(adaptive.media.format=html)", unbind = "-")
+	protected void setAMHTMLExportImportContentProcessor(
+		ExportImportContentProcessor<String> exportImportContentProcessor) {
+
+		_amHTMLExportImportContentProcessor = exportImportContentProcessor;
+	}
+
 	@Reference(
 		target = "(objectClass=com.liferay.blogs.internal.exportimport.content.processor.BlogsEntryExportImportContentProcessor)",
 		unbind = "-"
 	)
-	protected void setExportImportContentProcessor(
+	protected void setBlogsExportImportContentProcessor(
 		ExportImportContentProcessor<String> exportImportContentProcessor) {
 
 		_exportImportContentProcessor = exportImportContentProcessor;
 	}
 
-	@Reference(target = "(adaptive.media.format=html)")
 	private ExportImportContentProcessor<String>
 		_amHTMLExportImportContentProcessor;
-
 	private ExportImportContentProcessor<String> _exportImportContentProcessor;
 
 }
