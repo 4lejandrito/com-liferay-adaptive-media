@@ -93,17 +93,36 @@ public class AMJournalArticleExportImportContentProcessor
 		}
 	}
 
-	@Reference(target = "(adaptive.media.format=html)")
-	private ExportImportContentProcessor<String>
-		_amHTMLExportImportContentProcessor;
+	@Reference(target = "(adaptive.media.format=html)", unbind = "-")
+	protected void setAMHTMLExportImportContentProcessor(
+		ExportImportContentProcessor<String> exportImportContentProcessor) {
 
-	private final AMJournalArticleContentHTMLReplacer
+		_amHTMLExportImportContentProcessor = exportImportContentProcessor;
+	}
+
+	@Reference(unbind = "-")
+	protected void setAMJournalArticleContentHTMLReplacer(
+		AMJournalArticleContentHTMLReplacer
+			amJournalArticleContentHTMLReplacer) {
+
 		_amJournalArticleContentHTMLReplacer =
-			new AMJournalArticleContentHTMLReplacer();
+			amJournalArticleContentHTMLReplacer;
+	}
 
 	@Reference(
-		target = "(objectClass=com.liferay.journal.internal.exportimport.content.processor.JournalArticleExportImportContentProcessor)"
+		target = "(objectClass=com.liferay.journal.internal.exportimport.content.processor.JournalArticleExportImportContentProcessor)",
+		unbind = "-"
 	)
+	protected void setJournalArticleExportImportContentProcessor(
+		ExportImportContentProcessor<String> exportImportContentProcessor) {
+
+		_exportImportContentProcessor = exportImportContentProcessor;
+	}
+
+	private ExportImportContentProcessor<String>
+		_amHTMLExportImportContentProcessor;
+	private AMJournalArticleContentHTMLReplacer
+		_amJournalArticleContentHTMLReplacer;
 	private ExportImportContentProcessor<String> _exportImportContentProcessor;
 
 }
