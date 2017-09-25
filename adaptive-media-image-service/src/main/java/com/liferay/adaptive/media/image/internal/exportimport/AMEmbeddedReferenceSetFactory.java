@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.adaptive.media.blogs.internal.exportimport.content.processor;
+package com.liferay.adaptive.media.image.internal.exportimport;
 
 import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.exportimport.kernel.lar.ExportImportPathUtil;
