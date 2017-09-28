@@ -12,48 +12,49 @@
  * details.
  */
 
-package com.liferay.adaptive.media.blogs.internal.exportimport.content.processor;
+package com.liferay.adaptive.media.image.internal.exportimport.content.processor;
 
+import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.PortletDataException;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.portal.kernel.model.StagedModel;
-import com.liferay.portal.kernel.repository.model.FileEntry;
-import com.liferay.portal.kernel.xml.Element;
+import com.liferay.portal.kernel.util.MapUtil;
+
+import java.util.Map;
 
 /**
  * @author Adolfo Pérez
  */
-public class AMReferenceExporter {
+public class AMEmbeddedReferenceSet {
 
-	public AMReferenceExporter(
+	public AMEmbeddedReferenceSet(
 		PortletDataContext portletDataContext, StagedModel stagedModel,
-		boolean exportReferencedContent) {
+		Map<String, Long> embeddedReferences) {
 
 		_portletDataContext = portletDataContext;
 		_stagedModel = stagedModel;
-		_exportReferencedContent = exportReferencedContent;
+		_embeddedReferences = embeddedReferences;
 	}
 
-	public void exportReference(FileEntry fileEntry)
-		throws PortletDataException {
-
-		if (_exportReferencedContent) {
-			StagedModelDataHandlerUtil.exportReferenceStagedModel(
-				_portletDataContext, _stagedModel, fileEntry,
-				PortletDataContext.REFERENCE_TYPE_DEPENDENCY);
-		}
-		else {
-			Element element = _portletDataContext.getExportDataElement(
-				_stagedModel);
-
-			_portletDataContext.addReferenceElement(
-				_stagedModel, element, fileEntry,
-				PortletDataContext.REFERENCE_TYPE_DEPENDENCY, true);
-		}
+	public boolean containsReference(String path) {
+		return _embeddedReferences.containsKey(path);
 	}
 
-	private final boolean _exportReferencedContent;
+	public long importReference(String path) throws PortletDataException {
+		long classPK = _embeddedReferences.get(path);
+
+		StagedModelDataHandlerUtil.importReferenceStagedModel(
+			_portletDataContext, _stagedModel, DLFileEntry.class, classPK);
+
+		Map<Long, Long> dlFileEntryIds =
+			(Map<Long, Long>)_portletDataContext.getNewPrimaryKeysMap(
+				DLFileEntry.class);
+
+		return MapUtil.getLong(dlFileEntryIds, classPK, classPK);
+	}
+
+	private final Map<String, Long> _embeddedReferences;
 	private final PortletDataContext _portletDataContext;
 	private final StagedModel _stagedModel;
 

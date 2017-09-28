@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.adaptive.media.blogs.internal.exportimport.content.processor;
+package com.liferay.adaptive.media.journal.web.internal.exportimport.content.processor;
 
 import com.liferay.exportimport.content.processor.ExportImportContentProcessor;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
@@ -23,16 +23,15 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
 /**
- * @author Adolfo Pérez
+ * @author Alejandro Tardín
  */
 @Component(
 	property = {
-		"model.class.name=com.liferay.blogs.kernel.model.BlogsEntry",
-		"model.class.name=com.liferay.blogs.model.BlogsEntry",
+		"model.class.name=com.liferay.journal.model.JournalArticle",
 		"service.ranking:Integer=100"
 	}
 )
-public class AMBlogsEntryExportImportContentProcessor
+public class AMJournalArticleExportImportContentProcessor
 	implements ExportImportContentProcessor<String> {
 
 	@Override
@@ -43,14 +42,17 @@ public class AMBlogsEntryExportImportContentProcessor
 		throws Exception {
 
 		String replacedContent =
-			_blogsEntryExportImportContentProcessor.
+			_journalArticleExportImportContentProcessor.
 				replaceExportContentReferences(
 					portletDataContext, stagedModel, content,
 					exportReferencedContent, escapeContent);
 
-		return _htmlExportImportContentProcessor.replaceExportContentReferences(
-			portletDataContext, stagedModel, replacedContent,
-			exportReferencedContent, escapeContent);
+		return _amJournalArticleContentHTMLReplacer.replace(
+			replacedContent,
+			html -> _htmlExportImportContentProcessor.
+				replaceExportContentReferences(
+					portletDataContext, stagedModel, html,
+					exportReferencedContent, escapeContent));
 	}
 
 	@Override
@@ -60,35 +62,46 @@ public class AMBlogsEntryExportImportContentProcessor
 		throws Exception {
 
 		String replacedContent =
-			_blogsEntryExportImportContentProcessor.
+			_journalArticleExportImportContentProcessor.
 				replaceImportContentReferences(
 					portletDataContext, stagedModel, content);
 
-		return _htmlExportImportContentProcessor.replaceImportContentReferences(
-			portletDataContext, stagedModel, replacedContent);
+		return _amJournalArticleContentHTMLReplacer.replace(
+			replacedContent,
+			html -> _htmlExportImportContentProcessor.
+				replaceImportContentReferences(
+					portletDataContext, stagedModel, html));
 	}
 
 	@Override
 	public void validateContentReferences(long groupId, String content)
 		throws PortalException {
 
-		_blogsEntryExportImportContentProcessor.validateContentReferences(
+		_journalArticleExportImportContentProcessor.validateContentReferences(
 			groupId, content);
 
-		_htmlExportImportContentProcessor.validateContentReferences(
-			groupId, content);
+		try {
+			_amJournalArticleContentHTMLReplacer.replace(
+				content,
+				html -> {
+					_htmlExportImportContentProcessor.validateContentReferences(
+						groupId, html);
+
+					return html;
+				});
+		}
+		catch (Exception e) {
+			throw new PortalException(e);
+		}
 	}
 
-	@Reference(
-		target = "(objectClass=com.liferay.blogs.internal.exportimport.content.processor.BlogsEntryExportImportContentProcessor)",
-		unbind = "-"
-	)
-	protected void setBlogsEntryExportImportContentProcessor(
-		ExportImportContentProcessor<String>
-			blogsEntryExportImportContentProcessor) {
+	@Reference(unbind = "-")
+	protected void setAMJournalArticleContentHTMLReplacer(
+		AMJournalArticleContentHTMLReplacer
+			amJournalArticleContentHTMLReplacer) {
 
-		_blogsEntryExportImportContentProcessor =
-			blogsEntryExportImportContentProcessor;
+		_amJournalArticleContentHTMLReplacer =
+			amJournalArticleContentHTMLReplacer;
 	}
 
 	@Reference(target = "(adaptive.media.format=html)", unbind = "-")
@@ -98,9 +111,23 @@ public class AMBlogsEntryExportImportContentProcessor
 		_htmlExportImportContentProcessor = htmlExportImportContentProcessor;
 	}
 
-	private ExportImportContentProcessor<String>
-		_blogsEntryExportImportContentProcessor;
+	@Reference(
+		target = "(objectClass=com.liferay.journal.internal.exportimport.content.processor.JournalArticleExportImportContentProcessor)",
+		unbind = "-"
+	)
+	protected void setJournalArticleExportImportContentProcessor(
+		ExportImportContentProcessor<String>
+			journalArticleExportImportContentProcessor) {
+
+		_journalArticleExportImportContentProcessor =
+			journalArticleExportImportContentProcessor;
+	}
+
+	private AMJournalArticleContentHTMLReplacer
+		_amJournalArticleContentHTMLReplacer;
 	private ExportImportContentProcessor<String>
 		_htmlExportImportContentProcessor;
+	private ExportImportContentProcessor<String>
+		_journalArticleExportImportContentProcessor;
 
 }
