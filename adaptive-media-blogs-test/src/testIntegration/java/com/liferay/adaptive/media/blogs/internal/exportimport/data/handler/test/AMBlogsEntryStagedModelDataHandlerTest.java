@@ -12,15 +12,13 @@
  * details.
  */
 
-package com.liferay.adaptive.media.blogs.test;
+package com.liferay.adaptive.media.blogs.internal.exportimport.data.handler.test;
 
 import com.liferay.adaptive.media.image.configuration.AMImageConfigurationHelper;
 import com.liferay.adaptive.media.image.html.AMImageHTMLTagFactory;
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.blogs.model.BlogsEntry;
-import com.liferay.blogs.service.BlogsEntryLocalServiceUtil;
 import com.liferay.document.library.kernel.model.DLFolderConstants;
-import com.liferay.document.library.kernel.service.DLAppLocalServiceUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.exportimport.test.util.lar.BaseWorkflowedStagedModelDataHandlerTestCase;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -40,8 +38,7 @@ import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
-import com.liferay.registry.Registry;
-import com.liferay.registry.RegistryUtil;
+import com.liferay.portal.test.rule.Inject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -77,17 +74,12 @@ public class AMBlogsEntryStagedModelDataHandlerTest
 	public void setUp() throws Exception {
 		super.setUp();
 
-		Registry registry = RegistryUtil.getRegistry();
-
-		AMImageConfigurationHelper amImageConfigurationHelper =
-			registry.getService(AMImageConfigurationHelper.class);
-
 		Map<String, String> properties = new HashMap<>();
 
 		properties.put("max-height", "600");
 		properties.put("max-width", "800");
 
-		amImageConfigurationHelper.addAMImageConfigurationEntry(
+		_amImageConfigurationHelper.addAMImageConfigurationEntry(
 			stagingGroup.getCompanyId(), StringUtil.randomString(),
 			StringUtil.randomString(), StringUtil.randomString(), properties);
 	}
@@ -107,7 +99,7 @@ public class AMBlogsEntryStagedModelDataHandlerTest
 	}
 
 	@Test
-	public void testExportImportContentWithMultipleReferences()
+	public void testExportImportContentWithMultipleDynamicReferences()
 		throws Exception {
 
 		ServiceContext serviceContext = _getServiceContext();
@@ -175,8 +167,9 @@ public class AMBlogsEntryStagedModelDataHandlerTest
 
 		ServiceContext serviceContext = _getServiceContext();
 
-		return _addBlogsEntry(
-			_getImgTag(_addImageFileEntry(serviceContext)), serviceContext);
+		FileEntry fileEntry = _addImageFileEntry(serviceContext);
+
+		return _addBlogsEntry(_getImgTag(fileEntry), serviceContext);
 	}
 
 	@Override
@@ -185,16 +178,16 @@ public class AMBlogsEntryStagedModelDataHandlerTest
 
 		ServiceContext serviceContext = _getServiceContext();
 
+		FileEntry fileEntry = _addImageFileEntry(serviceContext);
+
 		return Arrays.asList(
-			_addBlogsEntry(
-				_getImgTag(_addImageFileEntry(serviceContext)),
-				serviceContext));
+			_addBlogsEntry(_getImgTag(fileEntry), serviceContext));
 	}
 
 	@Override
 	protected StagedModel getStagedModel(String uuid, Group group) {
 		try {
-			return BlogsEntryLocalServiceUtil.getBlogsEntryByUuidAndGroupId(
+			return _blogsEntryLocalService.getBlogsEntryByUuidAndGroupId(
 				uuid, group.getGroupId());
 		}
 		catch (Exception e) {
@@ -211,7 +204,7 @@ public class AMBlogsEntryStagedModelDataHandlerTest
 			String content, ServiceContext serviceContext)
 		throws Exception {
 
-		return BlogsEntryLocalServiceUtil.addEntry(
+		return _blogsEntryLocalService.addEntry(
 			TestPropsValues.getUserId(), RandomTestUtil.randomString(),
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
 			content, new Date(), true, true, new String[0], StringPool.BLANK,
@@ -221,7 +214,7 @@ public class AMBlogsEntryStagedModelDataHandlerTest
 	private FileEntry _addImageFileEntry(ServiceContext serviceContext)
 		throws Exception {
 
-		return DLAppLocalServiceUtil.addFileEntry(
+		return _dlAppLocalService.addFileEntry(
 			TestPropsValues.getUserId(), stagingGroup.getGroupId(),
 			DLFolderConstants.DEFAULT_PARENT_FOLDER_ID,
 			StringUtil.randomString(), ContentTypes.IMAGE_JPEG,
@@ -256,7 +249,7 @@ public class AMBlogsEntryStagedModelDataHandlerTest
 
 		for (FileEntry fileEntry : fileEntries) {
 			importedFileEntries.add(
-				DLAppLocalServiceUtil.getFileEntryByUuidAndGroupId(
+				_dlAppLocalService.getFileEntryByUuidAndGroupId(
 					fileEntry.getUuid(), liveGroup.getGroupId()));
 		}
 
@@ -267,20 +260,15 @@ public class AMBlogsEntryStagedModelDataHandlerTest
 	private String _getExpectedStaticContent(FileEntry... fileEntries)
 		throws Exception {
 
-		Registry registry = RegistryUtil.getRegistry();
-
-		AMImageHTMLTagFactory amImageHTMLTagFactory = registry.getService(
-			AMImageHTMLTagFactory.class);
-
 		StringBundler sb = new StringBundler(fileEntries.length * 2);
 
 		for (FileEntry fileEntry : fileEntries) {
 			FileEntry importedFileEntry =
-				DLAppLocalServiceUtil.getFileEntryByUuidAndGroupId(
+				_dlAppLocalService.getFileEntryByUuidAndGroupId(
 					fileEntry.getUuid(), liveGroup.getGroupId());
 
 			sb.append(
-				amImageHTMLTagFactory.create(
+				_amImageHTMLTagFactory.create(
 					_getImgTag(importedFileEntry), importedFileEntry));
 
 			sb.append(StringPool.NEW_LINE);
@@ -334,5 +322,17 @@ public class AMBlogsEntryStagedModelDataHandlerTest
 	private String _removeSpacing(String text) {
 		return text.replaceAll("\\s", StringPool.BLANK);
 	}
+
+	@Inject
+	private BlogsEntryLocalService _blogsEntryLocalService;
+
+	@Inject
+	private DLAppLocalService _dlAppLocalService;
+
+	@Inject
+	private AMImageConfigurationHelper _amImageConfigurationHelper;
+
+	@Inject
+	private AMImageHTMLTagFactory _amImageHTMLTagFactory;
 
 }
